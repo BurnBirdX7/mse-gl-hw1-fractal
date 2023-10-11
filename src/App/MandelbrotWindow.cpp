@@ -10,10 +10,10 @@ namespace
 {
 
 constexpr std::array<GLfloat, 16u> vertices = {
-	1.0f,  1.0f, 1.0f, 1.0f,  // 0. top-right
-	1.0f, -1.0f, 1.0f, 0.0f,  // 1. bottom-right
-	-1.0f, -1.0f, 0.0f, 0.0f, // 2. bottom-left
-	-1.0f,  1.0f, 0.0f, 1.0f, // 3. top-left
+	1.0f,  1.0f,  // 0. top-right
+	1.0f, -1.0f,  // 1. bottom-right
+	-1.0f, -1.0f, // 2. bottom-left
+	-1.0f,  1.0f, // 3. top-left
 };
 
 constexpr std::array<GLuint, 6u> indices = {
@@ -51,13 +51,10 @@ void MandelbrotWindow::init()
 	// Bind attributes
 	program_->bind();
 
-	int stride = static_cast<int>(4 * sizeof(GLfloat));
+	int stride = static_cast<int>(2 * sizeof(GLfloat));
 
 	program_->enableAttributeArray(0);
 	program_->setAttributeBuffer(0, GL_FLOAT, 0, 2, stride);
-
-	program_->enableAttributeArray(1);
-	program_->setAttributeBuffer(1, GL_FLOAT, static_cast<int>(2 * sizeof(GLfloat)), 2, stride);
 
 	borderUniform_ = program_->uniformLocation("border_value");
 	maxIterationUniform_ = program_->uniformLocation("max_iterations");
@@ -98,7 +95,7 @@ void MandelbrotWindow::render()
 	// Update uniform value
 	program_->setUniformValue(borderUniform_, 2);
 	program_->setUniformValue(maxIterationUniform_, 100);
-	program_->setUniformValue(scaleUniform_, 1.5f);
+	program_->setUniformValue(scaleUniform_,  scale_);
 	program_->setUniformValue(centerUniform_, center_);
 	program_->setUniformValue(aspectUniform_, aspectRatio_);
 
@@ -128,8 +125,8 @@ void MandelbrotWindow::mouseMoveEvent(QMouseEvent * e)
 {
 	if (trackMouse_) {
 		auto diff = QVector2D(e->localPos() - mousePressPosition_);
-		diff.setX(-diff.x() * aspectRatio_ / static_cast<float>(width()) * 1.5f);
-		diff.setY(diff.y() / static_cast<float>(height()) * 1.5f);
+		diff.setX(-diff.x() / static_cast<float>(width()) * 2 * aspectRatio_);
+		diff.setY( diff.y() / static_cast<float>(height()) * 2);
 		diff *= scale_;
 		center_ -= diff;
 		mousePressPosition_ = e->localPos();
@@ -140,4 +137,13 @@ void MandelbrotWindow::resizeEvent(QResizeEvent * e)
 {
 	auto const& s = e->size();
 	aspectRatio_ = static_cast<float>(s.width()) / static_cast<float>(s.height());
+}
+void MandelbrotWindow::wheelEvent(QWheelEvent * e)
+{
+	float angle = static_cast<float>(e->angleDelta().y());
+	if (angle > 0) {
+		scale_ /= 0.01f * angle;
+	} else if (angle < 0) {
+		scale_ *= -0.01f * angle;
+	}
 }

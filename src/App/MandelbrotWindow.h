@@ -24,6 +24,7 @@ protected:
 	void mouseReleaseEvent(QMouseEvent * e) override;
 	void mouseMoveEvent(QMouseEvent * e) override;
 	void resizeEvent(QResizeEvent * e) override;
+	void wheelEvent(QWheelEvent * e) override;
 
 private:
 	GLint borderUniform_ = -1;
@@ -39,7 +40,7 @@ private:
 	std::unique_ptr<QOpenGLShaderProgram> program_ = nullptr;
 
 	size_t frame_ = 0;
-	float scale_ = 1.0f;
+	float scale_ = 1.5f;
 
 	float aspectRatio_ = 1.0f;
 

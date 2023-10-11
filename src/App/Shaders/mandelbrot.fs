@@ -30,7 +30,7 @@ void main() {
     vec2 c;
     c.x = aspect * tex_coord.x;
     c.y = tex_coord.y;
-    c = (c - 0.5) * scale - center;
+    c = c * scale - center;
     float v = iter(c);
     frag_color = vec4(v, v, v, 1.0);
 }
