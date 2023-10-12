@@ -1,44 +1,21 @@
 #include <QApplication>
 #include <QSurfaceFormat>
 
+#include <QMainWindow>
 #include <QDockWidget>
 
-#include "MandelbrotWindow.h"
-#include "SettingsWindow.h"
 
-namespace
-{
-constexpr auto g_sampels = 16;
-constexpr auto g_gl_major_version = 3;
-constexpr auto g_gl_minor_version = 3;
-}// namespace
+#include "MainWindow.h"
+#include "MandelbrotWidget.h"
+
 
 int main(int argc, char ** argv)
 {
 	QApplication app(argc, argv);
 
-	QSurfaceFormat format;
-	format.setSamples(g_sampels);
-	format.setVersion(g_gl_major_version, g_gl_minor_version);
-	format.setProfile(QSurfaceFormat::CoreProfile);
-
-	auto* mandelbrotWindow = new MandelbrotWindow;
-	mandelbrotWindow->setFormat(format);
-	mandelbrotWindow->resize(640, 480);
-	mandelbrotWindow->setAnimated(true);
-
-	auto* settingsWindow = new SettingsWindow;
-
-	QObject::connect(settingsWindow, &SettingsWindow::maxIterationsChanged,
-					 mandelbrotWindow, &MandelbrotWindow::setMaxIterations);
-	QObject::connect(settingsWindow, &SettingsWindow::borderValueChanged,
-					 mandelbrotWindow, &MandelbrotWindow::setBorderValue);
-
-	QObject::connect(mandelbrotWindow, &MandelbrotWindow::fpsUpdated,
-					 settingsWindow, &SettingsWindow::setFpsLabel);
-
-	mandelbrotWindow->show();
-	settingsWindow->show();
+	auto* window = new MainWindow;
+	window->resize(640, 480);
+	window->show();
 
 	return app.exec();
 }

@@ -1,16 +1,21 @@
 #pragma once
 
+#include <chrono>
+
 #include <Base/GLWindow.hpp>
 
+#include <QOpenGLWidget>
 #include <QOpenGLBuffer>
 #include <QOpenGLShaderProgram>
 #include <QOpenGLVertexArrayObject>
 #include <QVector2D>
-#include <QElapsedTimer>
+#include <QTimer>
 
 #include <memory>
 
-class MandelbrotWindow final : public fgl::GLWindow
+class MandelbrotWidget final
+	: public QOpenGLWidget,
+	  protected QOpenGLFunctions
 {
 	Q_OBJECT
 
@@ -24,21 +29,27 @@ public:
 	constexpr static float DEFAULT_BORDER = 2.0f;
 
 public:
-	void init() override;
-	void render() override;
+	MandelbrotWidget(bool animate = false);
+
+	void initializeGL() override;
+	void paintGL() override;
+	void resizeGL(int w, int h) override;
 
 signals:
 	void fpsUpdated(float);
+	void timedFpsUpdated(float);
 
 public slots:
 	void setMaxIterations(int max_iterations);
 	void setBorderValue(int border_value);
 
+protected slots:
+	void fpsTimer();
+
 protected:
 	void mousePressEvent(QMouseEvent * e) override;
 	void mouseReleaseEvent(QMouseEvent * e) override;
 	void mouseMoveEvent(QMouseEvent * e) override;
-	void resizeEvent(QResizeEvent * e) override;
 	void wheelEvent(QWheelEvent * e) override;
 
 private:
@@ -72,5 +83,10 @@ private:
 	bool trackMouse_ = false;
 	QPointF mousePressPosition_{0.0f, 0.0f};
 	QPointF windowCenter_ = {0.0f, 0.0f};
-	std::chrono::steady_clock::time_point frameTime_;
+
+	QTimer* updateTimer_ {};
+	QTimer* frameTimer_ {};
+	std::chrono::steady_clock::time_point lastFrame_;
+	size_t framePoint_ = 0;
+	bool animate_ = false;
 };

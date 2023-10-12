@@ -1,4 +1,4 @@
-#include "MandelbrotWindow.h"
+#include "MandelbrotWidget.h"
 
 #include <QMouseEvent>
 #include <QOpenGLFunctions>
@@ -22,8 +22,10 @@ constexpr std::array<GLuint, 4u> indices = {
 
 }// namespace
 
-void MandelbrotWindow::init()
+void MandelbrotWidget::initializeGL()
 {
+	initializeOpenGLFunctions();
+
 	// Configure shaders
 	program_ = std::make_unique<QOpenGLShaderProgram>(this);
 	program_->addShaderFromSourceFile(QOpenGLShader::Vertex, ":/Shaders/mandelbrot.vs");
@@ -69,18 +71,27 @@ void MandelbrotWindow::init()
 	ibo_.release();
 	vbo_.release();
 
-	// Uncomment to enable depth test and face culling
-	// glEnable(GL_DEPTH_TEST);
-	// glEnable(GL_CULL_FACE);
 
 	// Clear all FBO buffers
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+	// Start update timer
+	if (animate_) {
+		updateTimer_ = new QTimer;
+		connect(updateTimer_, &QTimer::timeout,
+				this, qOverload<>(&MandelbrotWidget::update));
+		updateTimer_->start(16);
+	}
+
 	// Start frame timer
-	frameTime_ = std::chrono::steady_clock::now();
+	frameTimer_ = new QTimer;
+	connect(frameTimer_, &QTimer::timeout,
+			this, &MandelbrotWidget::fpsTimer);
+	frameTimer_->setTimerType(Qt::TimerType::PreciseTimer);
+	frameTimer_->start(1000);
 }
 
-void MandelbrotWindow::render()
+void MandelbrotWidget::paintGL()
 {
 	// Configure viewport
 	const auto retinaScale = devicePixelRatio();
@@ -111,26 +122,26 @@ void MandelbrotWindow::render()
 	// Increment frame counter
 	++frame_;
 
-	// Update FPS counter
+	// Update instant FPS counter
 	auto time = std::chrono::steady_clock::now();
-	auto dur = std::chrono::duration_cast<std::chrono::milliseconds>(time - frameTime_);
+	auto dur = std::chrono::duration_cast<std::chrono::milliseconds>(time - lastFrame_);
 	auto fps = 1000.f / dur.count();
 	emit fpsUpdated(fps);
-	frameTime_ = time;
+	lastFrame_ = time;
 }
 
-void MandelbrotWindow::mousePressEvent(QMouseEvent * e)
+void MandelbrotWidget::mousePressEvent(QMouseEvent * e)
 {
 	mousePressPosition_ = e->localPos();
 	trackMouse_ = true;
 }
 
-void MandelbrotWindow::mouseReleaseEvent(QMouseEvent *)
+void MandelbrotWidget::mouseReleaseEvent(QMouseEvent *)
 {
 	trackMouse_ = false;
 }
 
-QVector2D MandelbrotWindow::scaleDiff(QPointF const& point) {
+QVector2D MandelbrotWidget::scaleDiff(QPointF const& point) {
 	auto vec = QVector2D(point);
 	vec.setX(-vec.x() / static_cast<float>(width()) * 2 * aspectRatio_);
 	vec.setY( vec.y() / static_cast<float>(height()) * 2);
@@ -138,23 +149,19 @@ QVector2D MandelbrotWindow::scaleDiff(QPointF const& point) {
 	return vec;
 }
 
-void MandelbrotWindow::mouseMoveEvent(QMouseEvent * e)
+void MandelbrotWidget::mouseMoveEvent(QMouseEvent * e)
 {
 	if (trackMouse_) {
 		center_ -= scaleDiff(e->localPos() - mousePressPosition_);
 		mousePressPosition_ = e->localPos();
+		update();
 	}
 }
 
-void MandelbrotWindow::resizeEvent(QResizeEvent * e)
-{
-	auto const& s = e->size();
-	aspectRatio_ = static_cast<float>(s.width()) / static_cast<float>(s.height());
-	windowCenter_ = {s.width() / 2.f, s.height() / 2.f};
-}
-void MandelbrotWindow::wheelEvent(QWheelEvent * e)
+void MandelbrotWidget::wheelEvent(QWheelEvent * e)
 {
 	if (e->phase() == Qt::ScrollBegin || e->phase() == Qt::ScrollEnd) {
+		// Ignore OS specific flags
 		return;
 	}
 
@@ -167,24 +174,44 @@ void MandelbrotWindow::wheelEvent(QWheelEvent * e)
 	center_ += scaleDiff(diff);
 
 	constexpr float SCALING_FACTOR = 1.2f;
+	constexpr int DEFAULT_SCROLL_ANGLE = 120;
 
-	auto mult = angle / 120;
+	auto frac = angle / DEFAULT_SCROLL_ANGLE;
 
 
 	if (angle > 0) {
-		scale_ /= SCALING_FACTOR * mult;
+		scale_ /= SCALING_FACTOR * frac;
 	} else {
-		scale_ *= -SCALING_FACTOR * mult;
+		scale_ *= -SCALING_FACTOR * frac;
 	}
 
 	center_ -= scaleDiff(diff);
-}
-void MandelbrotWindow::setMaxIterations(int max_iterations)
-{
-	max_iterations_ = std::clamp(max_iterations, MIN_ITERATIONS, MAX_ITERATIONS);
+	repaint();
 }
 
-void MandelbrotWindow::setBorderValue(int border_value)
+void MandelbrotWidget::setMaxIterations(int max_iterations)
+{
+	max_iterations_ = std::clamp(max_iterations, MIN_ITERATIONS, MAX_ITERATIONS);
+	repaint();
+}
+
+void MandelbrotWidget::setBorderValue(int border_value)
 {
 	border_value_ = std::clamp(static_cast<float>(border_value) / 100.f, MIN_BORDER, MAX_BORDER);
+	repaint();
 }
+
+void MandelbrotWidget::resizeGL(int w, int h)
+{
+	aspectRatio_ = static_cast<float>(w) / static_cast<float>(h);
+	windowCenter_ = {w / 2.f, h / 2.f};
+}
+
+void MandelbrotWidget::fpsTimer() {
+	emit timedFpsUpdated(frame_ - framePoint_);
+	framePoint_ = frame_;
+}
+
+MandelbrotWidget::MandelbrotWidget(bool animate)
+	: animate_(animate)
+{}

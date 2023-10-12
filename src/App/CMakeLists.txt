@@ -1,9 +1,9 @@
 set(SRCS
     main.cpp
-        MandelbrotWindow.cpp
-        MandelbrotWindow.h
-        SettingsWindow.cpp
-        SettingsWindow.h
+        MandelbrotWidget.cpp
+        MandelbrotWidget.h
+        MainWindow.cpp
+        MainWindow.h
 
     shaders.qrc
     Shaders/mandelbrot.fs
