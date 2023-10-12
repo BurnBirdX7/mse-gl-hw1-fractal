@@ -1,4 +1,4 @@
-![build_cmake_status](https://github.com/BurnBirdX7/mse-gl-hw-fractal/actions/workflows/build_cmake.yml/badge.svg)
+![build_cmake_status](https://github.com/BurnBirdX7/mse-gl-hw1-fractal/actions/workflows/build_cmake.yml/badge.svg)
 
 # ITMO MSE OpenGL homework #1 - Fractal
 
