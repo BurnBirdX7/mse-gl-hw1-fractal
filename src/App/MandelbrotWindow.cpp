@@ -93,8 +93,8 @@ void MandelbrotWindow::render()
 	vao_.bind();
 
 	// Update uniform value
-	program_->setUniformValue(borderUniform_, 2);
-	program_->setUniformValue(maxIterationUniform_, 100);
+	program_->setUniformValue(borderUniform_, border_value_);
+	program_->setUniformValue(maxIterationUniform_, max_iteration_);
 	program_->setUniformValue(scaleUniform_,  scale_);
 	program_->setUniformValue(centerUniform_, center_);
 	program_->setUniformValue(aspectUniform_, aspectRatio_);
@@ -114,6 +114,7 @@ void MandelbrotWindow::mousePressEvent(QMouseEvent * e)
 {
 	mousePressPosition_ = e->localPos();
 	trackMouse_ = true;
+	qDebug() << mousePressPosition_ << '\n';
 }
 
 void MandelbrotWindow::mouseReleaseEvent(QMouseEvent *)
@@ -121,14 +122,18 @@ void MandelbrotWindow::mouseReleaseEvent(QMouseEvent *)
 	trackMouse_ = false;
 }
 
+QVector2D MandelbrotWindow::scaleDiff(QPointF const& point) {
+	auto vec = QVector2D(point);
+	vec.setX(-vec.x() / static_cast<float>(width()) * 2 * aspectRatio_);
+	vec.setY( vec.y() / static_cast<float>(height()) * 2);
+	vec *= scale_;
+	return vec;
+}
+
 void MandelbrotWindow::mouseMoveEvent(QMouseEvent * e)
 {
 	if (trackMouse_) {
-		auto diff = QVector2D(e->localPos() - mousePressPosition_);
-		diff.setX(-diff.x() / static_cast<float>(width()) * 2 * aspectRatio_);
-		diff.setY( diff.y() / static_cast<float>(height()) * 2);
-		diff *= scale_;
-		center_ -= diff;
+		center_ -= scaleDiff(e->localPos() - mousePressPosition_);
 		mousePressPosition_ = e->localPos();
 	}
 }
@@ -137,13 +142,23 @@ void MandelbrotWindow::resizeEvent(QResizeEvent * e)
 {
 	auto const& s = e->size();
 	aspectRatio_ = static_cast<float>(s.width()) / static_cast<float>(s.height());
+	windowCenter_ = {s.width() / 2.f, s.height() / 2.f};
 }
 void MandelbrotWindow::wheelEvent(QWheelEvent * e)
 {
 	float angle = static_cast<float>(e->angleDelta().y());
+	if (angle == 0) {
+		return;
+	}
+
+	auto diff = e->position() - windowCenter_;
+	center_ += scaleDiff(diff);
+
 	if (angle > 0) {
 		scale_ /= 0.01f * angle;
-	} else if (angle < 0) {
+	} else {
 		scale_ *= -0.01f * angle;
 	}
+
+	center_ -= scaleDiff(diff);
 }
