@@ -15,15 +15,31 @@ vec2 pow2(vec2 c) {
     return vec2(x, y);
 }
 
-float iter(vec2 coord) {
+vec3 iter(vec2 coord) {
     vec2 z = vec2(0, 0);
-    for (int i = 0; i < max_iterations; i++) {
+    int i;
+    float avg_dist = 0.0f;
+    float max_dist = 0.0f;
+    float min_dist = 2e20f;
+
+    for (i = 1; i < max_iterations; i++) {
         z = pow2(z) + coord;
-        if (length(z) > border_value) {
-            return i / max_iterations;
+        float len = length(z);
+        if (len > border_value) {
+            break;
         }
+        float dist = len * len;
+
+        // track stats for coloring
+        avg_dist = avg_dist + dist;
+        min_dist = min(min_dist, dist);
+        max_dist = max(max_dist, dist);
     }
-    return max_iterations;
+    // return vec3((max_dist - min_dist) / i, v, 0.0);
+    float v = i / max_iterations;
+    avg_dist /= i;
+    return vec3(avg_dist + 0.15 * v, 0.3 * v, v);
+
 }
 
 void main() {
@@ -31,6 +47,6 @@ void main() {
     c.x = aspect * tex_coord.x;
     c.y = tex_coord.y;
     c = c * scale - center;
-    float v = iter(c);
-    frag_color = vec4(v, v, v, 1.0);
+    vec3 v = iter(c);
+    frag_color = vec4(v, 1.0);
 }

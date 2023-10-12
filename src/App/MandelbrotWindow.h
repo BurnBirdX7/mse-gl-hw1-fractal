@@ -15,7 +15,7 @@ class MandelbrotWindow final : public fgl::GLWindow
 
 public:
 	constexpr static int MIN_ITERATIONS = 50;
-	constexpr static int MAX_ITERATIONS = 300;
+	constexpr static int MAX_ITERATIONS = 500;
 	constexpr static int DEFAULT_ITERATIONS = 100;
 
 	constexpr static float MIN_BORDER = 0.1f;
