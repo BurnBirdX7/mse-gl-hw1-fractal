@@ -2,22 +2,33 @@
 
 #include <Base/GLWindow.hpp>
 
-#include <QMatrix4x4>
 #include <QOpenGLBuffer>
 #include <QOpenGLShaderProgram>
 #include <QOpenGLVertexArrayObject>
-#include <QQuaternion>
 #include <QVector2D>
-#include <QVector3D>
 
 #include <memory>
 
 class MandelbrotWindow final : public fgl::GLWindow
 {
+	Q_OBJECT
+
+public:
+	constexpr static int MIN_ITERATIONS = 50;
+	constexpr static int MAX_ITERATIONS = 300;
+	constexpr static int DEFAULT_ITERATIONS = 100;
+
+	constexpr static float MIN_BORDER = 0.1f;
+	constexpr static float MAX_BORDER = 4.0f;
+	constexpr static float DEFAULT_BORDER = 2.0f;
 
 public:
 	void init() override;
 	void render() override;
+
+public slots:
+	void setMaxIterations(int max_iterations);
+	void setBorderValue(int border_value);
 
 protected:
 	void mousePressEvent(QMouseEvent * e) override;
@@ -47,8 +58,8 @@ private:
 
 	// Fractal params:
 
-	int border_value_ = 2;
-	int max_iteration_ = 100;
+	float border_value_ = DEFAULT_BORDER;
+	int max_iterations_ = DEFAULT_ITERATIONS;
 	float scale_ = 1.5f;
 	QVector2D center_ = {0.0, 0.0};
 	float aspectRatio_ = 1.0f;

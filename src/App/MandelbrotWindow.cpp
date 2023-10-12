@@ -10,8 +10,8 @@ namespace
 {
 
 constexpr std::array<GLfloat, 16u> vertices = {
-	1.0f,  1.0f,  // 0. top-right
-	1.0f, -1.0f,  // 1. bottom-right
+	 1.0f,  1.0f, // 0. top-right
+	 1.0f, -1.0f, // 1. bottom-right
 	-1.0f, -1.0f, // 2. bottom-left
 	-1.0f,  1.0f, // 3. top-left
 };
@@ -92,9 +92,9 @@ void MandelbrotWindow::render()
 	program_->bind();
 	vao_.bind();
 
-	// Update uniform value
+	// Update uniform values
 	program_->setUniformValue(borderUniform_, border_value_);
-	program_->setUniformValue(maxIterationUniform_, max_iteration_);
+	program_->setUniformValue(maxIterationUniform_, max_iterations_);
 	program_->setUniformValue(scaleUniform_,  scale_);
 	program_->setUniformValue(centerUniform_, center_);
 	program_->setUniformValue(aspectUniform_, aspectRatio_);
@@ -114,7 +114,6 @@ void MandelbrotWindow::mousePressEvent(QMouseEvent * e)
 {
 	mousePressPosition_ = e->localPos();
 	trackMouse_ = true;
-	qDebug() << mousePressPosition_ << '\n';
 }
 
 void MandelbrotWindow::mouseReleaseEvent(QMouseEvent *)
@@ -161,4 +160,13 @@ void MandelbrotWindow::wheelEvent(QWheelEvent * e)
 	}
 
 	center_ -= scaleDiff(diff);
+}
+void MandelbrotWindow::setMaxIterations(int max_iterations)
+{
+	max_iterations_ = std::clamp(max_iterations, MIN_ITERATIONS, MAX_ITERATIONS);
+}
+
+void MandelbrotWindow::setBorderValue(int border_value)
+{
+	border_value_ = std::clamp(border_value / 100.f, MIN_BORDER, MAX_BORDER);
 }

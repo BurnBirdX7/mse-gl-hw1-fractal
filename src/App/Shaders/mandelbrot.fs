@@ -3,7 +3,7 @@
 out vec4 frag_color;
 in vec2 tex_coord;
 
-uniform int border_value;
+uniform float border_value;
 uniform int max_iterations;
 uniform float scale;
 uniform vec2 center;

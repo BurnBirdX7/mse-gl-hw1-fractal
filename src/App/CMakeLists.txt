@@ -4,8 +4,10 @@ set(SRCS
         MandelbrotWindow.h
 
     shaders.qrc
-    Shaders/diffuse.fs
-    Shaders/diffuse.vs
+    Shaders/mandelbrot.fs
+    Shaders/mandelbrot.vs
+        SettingsWindow.cpp
+        SettingsWindow.h
 )
 
 find_package(Qt5 COMPONENTS Widgets REQUIRED)

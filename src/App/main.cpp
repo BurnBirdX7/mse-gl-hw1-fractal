@@ -2,6 +2,7 @@
 #include <QSurfaceFormat>
 
 #include "MandelbrotWindow.h"
+#include "SettingsWindow.h"
 
 namespace
 {
@@ -19,12 +20,21 @@ int main(int argc, char ** argv)
 	format.setVersion(g_gl_major_version, g_gl_minor_version);
 	format.setProfile(QSurfaceFormat::CoreProfile);
 
-	MandelbrotWindow window;
-	window.setFormat(format);
-	window.resize(640, 480);
-	window.show();
+	MandelbrotWindow mandelbrotWindow;
+	mandelbrotWindow.setFormat(format);
+	mandelbrotWindow.resize(640, 480);
 
-	window.setAnimated(true);
+	mandelbrotWindow.setAnimated(true);
+
+	SettingsWindow settingsWindow;
+
+	QObject::connect(&settingsWindow, &SettingsWindow::maxIterationsChanged,
+					 &mandelbrotWindow, &MandelbrotWindow::setMaxIterations);
+	QObject::connect(&settingsWindow, &SettingsWindow::borderValueChanged,
+					 &mandelbrotWindow, &MandelbrotWindow::setBorderValue);
+
+	mandelbrotWindow.show();
+	settingsWindow.show();
 
 	return app.exec();
 }
