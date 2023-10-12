@@ -70,7 +70,7 @@ private:
 
 	// Tracking params:
 	bool trackMouse_ = false;
-	QPointF mousePressPosition_{0.f, 0.f};
-	QPointF windowCenter_ = {0.f, 0.f};
-	QElapsedTimer frameTimer_ = {};
+	QPointF mousePressPosition_{0.0f, 0.0f};
+	QPointF windowCenter_ = {0.0f, 0.0f};
+	std::chrono::steady_clock::time_point frameTime_;
 };

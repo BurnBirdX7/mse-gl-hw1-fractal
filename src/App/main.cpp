@@ -1,6 +1,8 @@
 #include <QApplication>
 #include <QSurfaceFormat>
 
+#include <QDockWidget>
+
 #include "MandelbrotWindow.h"
 #include "SettingsWindow.h"
 
@@ -20,24 +22,23 @@ int main(int argc, char ** argv)
 	format.setVersion(g_gl_major_version, g_gl_minor_version);
 	format.setProfile(QSurfaceFormat::CoreProfile);
 
-	MandelbrotWindow mandelbrotWindow;
-	mandelbrotWindow.setFormat(format);
-	mandelbrotWindow.resize(640, 480);
+	auto* mandelbrotWindow = new MandelbrotWindow;
+	mandelbrotWindow->setFormat(format);
+	mandelbrotWindow->resize(640, 480);
+	mandelbrotWindow->setAnimated(true);
 
-	mandelbrotWindow.setAnimated(true);
+	auto* settingsWindow = new SettingsWindow;
 
-	SettingsWindow settingsWindow;
+	QObject::connect(settingsWindow, &SettingsWindow::maxIterationsChanged,
+					 mandelbrotWindow, &MandelbrotWindow::setMaxIterations);
+	QObject::connect(settingsWindow, &SettingsWindow::borderValueChanged,
+					 mandelbrotWindow, &MandelbrotWindow::setBorderValue);
 
-	QObject::connect(&settingsWindow, &SettingsWindow::maxIterationsChanged,
-					 &mandelbrotWindow, &MandelbrotWindow::setMaxIterations);
-	QObject::connect(&settingsWindow, &SettingsWindow::borderValueChanged,
-					 &mandelbrotWindow, &MandelbrotWindow::setBorderValue);
+	QObject::connect(mandelbrotWindow, &MandelbrotWindow::fpsUpdated,
+					 settingsWindow, &SettingsWindow::setFpsLabel);
 
-	QObject::connect(&mandelbrotWindow, &MandelbrotWindow::fpsUpdated,
-					 &settingsWindow, &SettingsWindow::setFpsLabel);
-
-	mandelbrotWindow.show();
-	settingsWindow.show();
+	mandelbrotWindow->show();
+	settingsWindow->show();
 
 	return app.exec();
 }

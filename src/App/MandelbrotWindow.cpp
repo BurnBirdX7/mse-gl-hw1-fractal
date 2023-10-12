@@ -16,9 +16,8 @@ constexpr std::array<GLfloat, 16u> vertices = {
 	-1.0f,  1.0f, // 3. top-left
 };
 
-constexpr std::array<GLuint, 6u> indices = {
-	0, 1, 3,
-	1, 2, 3,
+constexpr std::array<GLuint, 4u> indices = {
+	0, 1, 3, 2
 };
 
 }// namespace
@@ -78,7 +77,7 @@ void MandelbrotWindow::init()
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	// Start frame timer
-	frameTimer_.start();
+	frameTime_ = std::chrono::steady_clock::now();
 }
 
 void MandelbrotWindow::render()
@@ -103,7 +102,7 @@ void MandelbrotWindow::render()
 	program_->setUniformValue(aspectUniform_, aspectRatio_);
 
 	// Draw
-	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
+	glDrawElements(GL_TRIANGLE_STRIP, 4, GL_UNSIGNED_INT, nullptr);
 
 	// Release VAO and shader program
 	vao_.release();
@@ -113,9 +112,11 @@ void MandelbrotWindow::render()
 	++frame_;
 
 	// Update FPS counter
-	auto time = frameTimer_.restart();
-	auto fps = 1000.f / static_cast<float>(time);
+	auto time = std::chrono::steady_clock::now();
+	auto dur = std::chrono::duration_cast<std::chrono::milliseconds>(time - frameTime_);
+	auto fps = 1000.f / dur.count();
 	emit fpsUpdated(fps);
+	frameTime_ = time;
 }
 
 void MandelbrotWindow::mousePressEvent(QMouseEvent * e)
@@ -153,18 +154,27 @@ void MandelbrotWindow::resizeEvent(QResizeEvent * e)
 }
 void MandelbrotWindow::wheelEvent(QWheelEvent * e)
 {
+	if (e->phase() == Qt::ScrollBegin || e->phase() == Qt::ScrollEnd) {
+		return;
+	}
+
 	float angle = static_cast<float>(e->angleDelta().y());
-	if (angle == 0) {
+	if (angle == 0.0f) { // To avoid division by zero
 		return;
 	}
 
 	auto diff = e->position() - windowCenter_;
 	center_ += scaleDiff(diff);
 
+	constexpr float SCALING_FACTOR = 1.2f;
+
+	auto mult = angle / 120;
+
+
 	if (angle > 0) {
-		scale_ /= 0.01f * angle;
+		scale_ /= SCALING_FACTOR * mult;
 	} else {
-		scale_ *= -0.01f * angle;
+		scale_ *= -SCALING_FACTOR * mult;
 	}
 
 	center_ -= scaleDiff(diff);
@@ -176,5 +186,5 @@ void MandelbrotWindow::setMaxIterations(int max_iterations)
 
 void MandelbrotWindow::setBorderValue(int border_value)
 {
-	border_value_ = std::clamp(border_value / 100.f, MIN_BORDER, MAX_BORDER);
+	border_value_ = std::clamp(static_cast<float>(border_value) / 100.f, MIN_BORDER, MAX_BORDER);
 }
