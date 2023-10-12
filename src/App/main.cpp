@@ -33,6 +33,9 @@ int main(int argc, char ** argv)
 	QObject::connect(&settingsWindow, &SettingsWindow::borderValueChanged,
 					 &mandelbrotWindow, &MandelbrotWindow::setBorderValue);
 
+	QObject::connect(&mandelbrotWindow, &MandelbrotWindow::fpsUpdated,
+					 &settingsWindow, &SettingsWindow::setFpsLabel);
+
 	mandelbrotWindow.show();
 	settingsWindow.show();
 

@@ -76,6 +76,9 @@ void MandelbrotWindow::init()
 
 	// Clear all FBO buffers
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	// Start frame timer
+	frameTimer_.start();
 }
 
 void MandelbrotWindow::render()
@@ -108,6 +111,11 @@ void MandelbrotWindow::render()
 
 	// Increment frame counter
 	++frame_;
+
+	// Update FPS counter
+	auto time = frameTimer_.restart();
+	auto fps = 1000.f / static_cast<float>(time);
+	emit fpsUpdated(fps);
 }
 
 void MandelbrotWindow::mousePressEvent(QMouseEvent * e)

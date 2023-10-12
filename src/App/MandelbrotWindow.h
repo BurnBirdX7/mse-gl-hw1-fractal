@@ -6,6 +6,7 @@
 #include <QOpenGLShaderProgram>
 #include <QOpenGLVertexArrayObject>
 #include <QVector2D>
+#include <QElapsedTimer>
 
 #include <memory>
 
@@ -25,6 +26,9 @@ public:
 public:
 	void init() override;
 	void render() override;
+
+signals:
+	void fpsUpdated(float);
 
 public slots:
 	void setMaxIterations(int max_iterations);
@@ -60,7 +64,7 @@ private:
 
 	float border_value_ = DEFAULT_BORDER;
 	int max_iterations_ = DEFAULT_ITERATIONS;
-	float scale_ = 1.5f;
+	float scale_ = 1.0f;
 	QVector2D center_ = {0.0, 0.0};
 	float aspectRatio_ = 1.0f;
 
@@ -68,4 +72,5 @@ private:
 	bool trackMouse_ = false;
 	QPointF mousePressPosition_{0.f, 0.f};
 	QPointF windowCenter_ = {0.f, 0.f};
+	QElapsedTimer frameTimer_ = {};
 };
