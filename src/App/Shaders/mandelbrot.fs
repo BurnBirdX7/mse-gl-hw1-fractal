@@ -19,8 +19,6 @@ vec3 iter(vec2 coord) {
     vec2 z = vec2(0, 0);
     int i;
     float avg_dist = 0.0f;
-    float max_dist = 0.0f;
-    float min_dist = 2e20f;
 
     for (i = 1; i < max_iterations; i++) {
         z = pow2(z) + coord;
@@ -28,14 +26,11 @@ vec3 iter(vec2 coord) {
         if (len > border_value) {
             break;
         }
-        float dist = len * len;
 
         // track stats for coloring
-        avg_dist = avg_dist + dist;
-        min_dist = min(min_dist, dist);
-        max_dist = max(max_dist, dist);
+        avg_dist = avg_dist + len * len;
     }
-    // return vec3((max_dist - min_dist) / i, v, 0.0);
+
     float v = i / max_iterations;
     avg_dist /= i;
     return vec3(avg_dist + 0.15 * v, 0.3 * v, v);

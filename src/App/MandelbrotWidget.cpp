@@ -186,19 +186,19 @@ void MandelbrotWidget::wheelEvent(QWheelEvent * e)
 	}
 
 	center_ -= scaleDiff(diff);
-	repaint();
+	update();
 }
 
 void MandelbrotWidget::setMaxIterations(int max_iterations)
 {
 	max_iterations_ = std::clamp(max_iterations, MIN_ITERATIONS, MAX_ITERATIONS);
-	repaint();
+	update();
 }
 
 void MandelbrotWidget::setBorderValue(int border_value)
 {
 	border_value_ = std::clamp(static_cast<float>(border_value) / 100.f, MIN_BORDER, MAX_BORDER);
-	repaint();
+	update();
 }
 
 void MandelbrotWidget::resizeGL(int w, int h)
