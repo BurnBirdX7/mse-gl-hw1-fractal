@@ -38,15 +38,7 @@ constexpr auto g_gl_minor_version = 3;
 }// namespace
 
 MandelbrotWidget * createMandelbrotWidget() {
-	QSurfaceFormat format;
-	format.setSamples(g_sampels);
-	format.setVersion(g_gl_major_version, g_gl_minor_version);
-	format.setProfile(QSurfaceFormat::CoreProfile);
-
-	auto* mandelbrotWindow = new MandelbrotWidget;
-	mandelbrotWindow->setFormat(format);
-
-	return mandelbrotWindow;
+	return new MandelbrotWidget;
 }
 
 MainWindow::MainWindow()

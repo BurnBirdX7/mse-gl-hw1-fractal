@@ -43,5 +43,5 @@ void main() {
     c.y = tex_coord.y;
     c = c * scale - center;
     vec3 v = iter(c);
-    frag_color = vec4(v, 1.0);
+    frag_color = vec4(pow(v, vec3(0.45)), 1.0);
 }
