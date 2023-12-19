@@ -5,6 +5,7 @@
 #include <QScreen>
 
 #include <array>
+#include <cmath>
 
 namespace
 {
@@ -160,29 +161,30 @@ void MandelbrotWidget::mouseMoveEvent(QMouseEvent * e)
 
 void MandelbrotWidget::wheelEvent(QWheelEvent * e)
 {
+	constexpr int MIN_SCROLL_ANGLE = 120;
+	constexpr float SCALING_FACTOR = 1.1f;
+
 	if (e->phase() == Qt::ScrollBegin || e->phase() == Qt::ScrollEnd) {
 		// Ignore OS specific flags
 		return;
 	}
 
-	float angle = static_cast<float>(e->angleDelta().y());
-	if (angle == 0.0f) { // To avoid division by zero
+	static int angle = 0;
+	angle += e->angleDelta().y();
+
+	int scroll_amount = angle / MIN_SCROLL_ANGLE;
+	if (scroll_amount == 0) { // Not enough angle
 		return;
 	}
 
+	angle = angle % MIN_SCROLL_ANGLE;
 	auto diff = e->position() - windowCenter_;
 	center_ += scaleDiff(diff);
 
-	constexpr float SCALING_FACTOR = 1.2f;
-	constexpr int DEFAULT_SCROLL_ANGLE = 120;
-
-	auto frac = angle / DEFAULT_SCROLL_ANGLE;
-
-
-	if (angle > 0) {
-		scale_ /= SCALING_FACTOR * frac;
+	if (scroll_amount > 0) {
+		scale_ /= std::pow(SCALING_FACTOR, static_cast<float>(scroll_amount));
 	} else {
-		scale_ *= -SCALING_FACTOR * frac;
+		scale_ *= std::pow(SCALING_FACTOR, static_cast<float>(-scroll_amount));
 	}
 
 	center_ -= scaleDiff(diff);
