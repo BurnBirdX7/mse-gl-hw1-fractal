@@ -2,7 +2,6 @@
 #include "MandelbrotWidget.h"
 
 #include <QDockWidget>
-#include <chrono>
 
 using namespace std::chrono_literals;
 
@@ -29,13 +28,6 @@ QLabel* createFpsLabel() {
 	label->setText("<...>");
 	return label;
 }
-
-namespace
-{
-constexpr auto g_sampels = 16;
-constexpr auto g_gl_major_version = 3;
-constexpr auto g_gl_minor_version = 3;
-}// namespace
 
 MandelbrotWidget * createMandelbrotWidget() {
 	return new MandelbrotWidget;
